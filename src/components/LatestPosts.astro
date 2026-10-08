@@ -1,0 +1,457 @@
+
+---
+import { getCollection } from 'astro:content';
+
+// 自动获取碎碎念目录下最新的 5 篇文章
+const posts = (await getCollection('docs'))
+  .filter(({ id, data }) =>
+    id.startsWith('notes/') &&
+    data.date instanceof Date &&
+    data.draft !== true
+  )
+  .sort(
+    (a, b) =>
+      (b.data.date as Date).getTime() -
+      (a.data.date as Date).getTime()
+  )
+  .slice(0, 5);
+---
+
+<section class="geek-latest" aria-labelledby="latest-heading">
+
+  <!-- Terminal Top Bar -->
+  <div class="terminal-bar">
+    <div class="window-dots" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <span class="terminal-name">
+      thevoid3301@knowledge: ~/recent
+    </span>
+
+    <span class="terminal-shell">zsh</span>
+  </div>
+
+  <div class="terminal-content">
+
+    <!-- Command -->
+    <div class="terminal-command">
+      <span class="command-prompt">➜</span>
+      <span class="command-path">~</span>
+      <span class="command-text">
+        ls -lt ~/notes | head -5
+      </span>
+    </div>
+
+    <!-- Section Heading -->
+    <div class="latest-header">
+      <div>
+        <span class="section-index">
+          01 / LATEST TRANSMISSIONS
+        </span>
+
+        <h2 id="latest-heading">
+          Recent Updates<span class="accent">_</span>
+        </h2>
+
+        <p class="section-description">
+          Bits of knowledge, thoughts and experiments.
+        </p>
+      </div>
+
+      <span class="status">
+        <span class="status-dot"></span>
+        SYNCED
+      </span>
+    </div>
+
+    <!-- Article List -->
+    <div class="latest-list">
+
+      {posts.length > 0 ? (
+        posts.map((post) => {
+          const slug = (post.data.slug || post.id)
+            .replace(/^\/|\/$/g, '');
+
+          const date = (post.data.date as Date)
+            .toISOString()
+            .slice(0, 10);
+
+          return (
+            <a class="latest-item" href={`/${slug}/`}>
+
+              <div class="item-info">
+                <div class="item-meta">
+                  <time datetime={date}>{date}</time>
+                  <span class="meta-divider">/</span>
+                  <span class="item-category">NOTES</span>
+                </div>
+
+                <strong class="item-title">
+                  {post.data.title}
+                </strong>
+
+                {post.data.description && (
+                  <span class="item-description">
+                    {post.data.description}
+                  </span>
+                )}
+              </div>
+
+              <span class="item-arrow" aria-hidden="true">
+                ↗
+              </span>
+
+            </a>
+          );
+        })
+      ) : (
+        <p class="empty-message">
+          <span class="accent">$</span>
+          No transmissions yet.
+        </p>
+      )}
+
+    </div>
+
+    <!-- Footer -->
+    <div class="latest-footer">
+      <span class="entries-count">
+        {posts.length} entries found
+      </span>
+
+      <a href="/notes/" class="view-all">
+        View all posts <span aria-hidden="true">→</span>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  /* ========= Terminal Container ========= */
+
+  .geek-latest {
+    margin: 3.5rem 0 2.5rem;
+    overflow: hidden;
+
+    background: #0b1320;
+    color: #e5eef6;
+
+    border: 1px solid #263b4b;
+    border-radius: 14px;
+
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.16),
+      0 0 30px rgba(94, 234, 212, 0.025);
+  }
+
+  /* ========= Terminal Top Bar ========= */
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    padding: 0.85rem 1.1rem;
+
+    background: #111e2c;
+    border-bottom: 1px solid #263b4b;
+
+    font-family: Consolas, "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    color: #91a9bc;
+  }
+
+  .window-dots {
+    display: flex;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+
+  .window-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fb7185;
+  }
+
+  .window-dots span:nth-child(2) {
+    background: #fbbf24;
+  }
+
+  .window-dots span:nth-child(3) {
+    background: #34d399;
+  }
+
+  .terminal-shell {
+    color: #748ca1;
+  }
+
+  /* ========= Main Content ========= */
+
+  .terminal-content {
+    padding: 1.5rem 1.8rem 1.2rem;
+    background:
+      radial-gradient(
+        ellipse at top right,
+        rgba(94, 234, 212, 0.035),
+        transparent 60%
+      );
+  }
+
+  .terminal-command {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+
+    margin-bottom: 2rem;
+
+    font-family: Consolas, "JetBrains Mono", monospace;
+    font-size: 0.82rem;
+  }
+
+  .command-prompt,
+  .accent {
+    color: #5eead4;
+  }
+
+  .command-path {
+    color: #a78bfa;
+  }
+
+  .command-text {
+    color: #d8e6f0;
+  }
+
+  /* ========= Section Heading ========= */
+
+  .latest-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .section-index {
+    font-family: Consolas, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: #5eead4;
+  }
+
+  .latest-header h2 {
+    margin: 0.55rem 0 0.5rem;
+    padding: 0;
+    border: 0;
+
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    line-height: 1.3;
+    font-weight: 750;
+    color: #f0f6fa;
+  }
+
+  .section-description {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #91a9bc;
+  }
+
+  /* ========= Status ========= */
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+
+    margin-top: 0.2rem;
+
+    font-family: Consolas, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+
+    color: #5eead4;
+    white-space: nowrap;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+  }
+
+  /* ========= Articles ========= */
+
+  .latest-list {
+    border-top: 1px solid #263b4b;
+  }
+
+  .latest-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    padding: 1.1rem 0;
+
+    border-bottom: 1px solid #263b4b;
+    color: #e5eef6;
+    text-decoration: none;
+
+    transition:
+      padding 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .latest-item:hover {
+    padding-left: 0.6rem;
+    background: rgba(94, 234, 212, 0.035);
+    text-decoration: none;
+  }
+
+  .latest-item:focus-visible {
+    outline: 2px solid #5eead4;
+    outline-offset: -2px;
+  }
+
+  .item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    font-family: Consolas, monospace;
+    font-size: 0.72rem;
+    color: #8da6b8;
+  }
+
+  .meta-divider {
+    color: #516a7d;
+  }
+
+  .item-category {
+    color: #5eead4;
+    letter-spacing: 0.05em;
+  }
+
+  .item-title {
+    color: #e7f1f8;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    font-weight: 600;
+
+    transition: color 0.2s ease;
+  }
+
+  .latest-item:hover .item-title {
+    color: #5eead4;
+  }
+
+  .item-description {
+    color: #92a9bb;
+    font-size: 0.81rem;
+    line-height: 1.6;
+  }
+
+  .item-arrow {
+    color: #5eead4;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  .latest-item:hover .item-arrow {
+    transform: translate(3px, -3px);
+  }
+
+  /* ========= Footer ========= */
+
+  .latest-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    padding-top: 1.3rem;
+    font-family: Consolas, monospace;
+    font-size: 0.75rem;
+  }
+
+  .entries-count {
+    color: #8da6b8;
+  }
+
+  .view-all {
+    color: #5eead4;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .view-all:hover {
+    color: #b5fff0;
+    text-decoration: underline;
+  }
+
+  .empty-message {
+    padding: 1.5rem 0;
+    color: #92a9bb;
+    font-family: Consolas, monospace;
+  }
+
+  /* ========= Mobile ========= */
+
+  @media (max-width: 640px) {
+    .geek-latest {
+      margin: 2.5rem 0;
+    }
+
+    .terminal-content {
+      padding: 1.2rem;
+    }
+
+    .terminal-bar {
+      gap: 0.5rem;
+      font-size: 0.62rem;
+    }
+
+    .terminal-shell {
+      display: none;
+    }
+
+    .latest-header {
+      flex-direction: column;
+    }
+
+    .latest-item {
+      padding: 1rem 0;
+    }
+
+    .item-description {
+      font-size: 0.76rem;
+    }
+
+    .latest-footer {
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .latest-item,
+    .item-title,
+    .item-arrow {
+      transition: none;
+    }
+  }
+</style>

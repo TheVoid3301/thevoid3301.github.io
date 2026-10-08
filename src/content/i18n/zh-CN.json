@@ -1,0 +1,28 @@
+
+{
+  "starlightBlog.sidebar.all": "全部文章",
+  "starlightBlog.sidebar.featured": "精选文章",
+  "starlightBlog.sidebar.recent": "最新文章",
+  "starlightBlog.sidebar.tags": "文章标签",
+  "starlightBlog.sidebar.authors": "文章作者",
+  "starlightBlog.sidebar.rss": "RSS 订阅",
+
+  "starlightBlog.post.tags": "标签：",
+  "starlightBlog.post.featured": "精选",
+  "starlightBlog.post.draft": "草稿",
+  "starlightBlog.post.date": "{{date, datetime(dateStyle: medium)}}",
+  "starlightBlog.post.lastUpdate": " · 更新于：{{date, datetime(dateStyle: medium)}}",
+
+  "starlightBlog.pagination.prev": "上一篇",
+  "starlightBlog.pagination.next": "下一篇",
+
+  "starlightBlog.metrics.readingTime.minutes": " · 阅读约 {{count}} 分钟",
+  "starlightBlog.metrics.words_one": " · {{count}} 字",
+  "starlightBlog.metrics.words_other": " · {{count}} 字",
+
+  "starlightBlog.tags.count_one": "标签「{{tag}}」下有 {{count}} 篇文章",
+  "starlightBlog.tags.count_other": "标签「{{tag}}」下有 {{count}} 篇文章",
+
+  "starlightBlog.authors.count_one": "{{author}} 的 {{count}} 篇文章",
+  "starlightBlog.authors.count_other": "{{author}} 的 {{count}} 篇文章"
+}

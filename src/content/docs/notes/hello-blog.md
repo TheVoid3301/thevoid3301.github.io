@@ -1,9 +1,12 @@
 ---
 title: "Hello Blog：我的博客从这里开始"
 description: "记录一下我为什么想要开始写博客, 以及后续的一些计划. "
-sidebar:
-  order: 2
-  badge: First Post
+date: 2026-10-08
+tags:
+  - Life
+  - Astro
+  - GitHub
+featured: true
 ---
 
 # Hello Blog：我的博客从这里开始
