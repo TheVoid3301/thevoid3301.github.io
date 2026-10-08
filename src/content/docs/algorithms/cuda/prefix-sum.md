@@ -9,10 +9,11 @@ tags:
 sidebar:
     order: 1
 ---
+# Prefix Sum：CUDA 并行前缀和
 
 > **题目来源**：[LeetGPU — Prefix Sum](https://leetgpu.com/challenges/prefix-sum) · **难度**：Medium · **语言**：CUDA C++  
 
-## 1. 题目描述
+## 题目描述
 
 给定一个长度为 `N` 的 `float32` 数组 `A`，在 GPU 上计算**包含当前位置的前缀和（Inclusive Prefix Sum）**，并将结果存入 `B`。
 
@@ -35,7 +36,9 @@ B = [2.0,  1.0, 5.0, 8.0]
 
 这里计算的是 **Inclusive Scan**，不是 Exclusive Scan：前者 `B[0] = A[0]`，后者通常 `B[0] = 0`。
 
-## 2. Naive
+---
+
+## Naive
 
 > Naive CUDA Kernel
 > 让每个线程都计算属于自己下标的前缀和
@@ -64,7 +67,7 @@ extern "C" void solve(const float* A, float* B, int N) {
 
 ```
 
-## 3. 参考实现：分层并行 Scan
+## 参考实现：分层并行 Scan
 
 单个 `Block` 内可以使用 `__shfl_up_sync` 和少量 Shared Memory 做前缀和，但**不同 Block 之间不能用 `__syncthreads()` 同步**。
 
@@ -205,7 +208,7 @@ extern "C" void solve(const float* A, float* B, int N) {
 
 
 
-## 4. 本题收获
+## 本题收获
 
 Prefix Sum 不能简单地“一个线程处理一个输出”，因为每个输出都依赖它前面的输入。核心是把这个依赖结构改写为可以并行执行的 **Scan**，并在 **Warp → Block → Grid** 的层次之间传递局部总和。
 
