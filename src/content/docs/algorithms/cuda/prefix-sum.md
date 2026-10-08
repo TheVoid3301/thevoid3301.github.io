@@ -89,111 +89,121 @@ flowchart TD
 #include <cuda_runtime.h>
 
 constexpr int BLOCK = 256;
-constexpr int WARP = 32;
-constexpr int WARPS_PER_BLOCK = BLOCK / WARP;
 
-// 一个 Warp 内的 Inclusive Scan：5 轮 Shuffle。
-__device__ __forceinline__ float warp_scan(float value) {
-    const int lane = threadIdx.x & (WARP - 1);
-    for (int offset = 1; offset < WARP; offset <<= 1) {
-        const float prev = __shfl_up_sync(0xffffffffu, value, offset);
-        if (lane >= offset) value += prev;
-    }
-    return value;
-}
+// 第一阶段：每个 Block 独立计算局部 Inclusive Scan
+__global__ void block_scan(
+    const float* A,
+    float* B,
+    float* block_sums,
+    int N
+) {
+    __shared__ float s[BLOCK];
 
-// 每个 Block 扫描 256 个元素，并可选地记录该 Block 的总和。
-__global__ void block_scan(const float* input,
-                           float* output,
-                           float* block_sums,
-                           int n) {
-    __shared__ float warp_sums[WARPS_PER_BLOCK];
+    int t = threadIdx.x;
+    int id = blockIdx.x * BLOCK + t;
 
-    const int tid = threadIdx.x;
-    const int lane = tid & (WARP - 1);
-    const int warp = tid / WARP;
-    const int idx = blockIdx.x * BLOCK + tid;
-
-    // 处理最后不足 256 元素的 Block：越界位置填 0。
-    float value = (idx < n) ? input[idx] : 0.0f;
-
-    // 阶段 1：Warp 内 Inclusive Scan。
-    value = warp_scan(value);
-
-    // 每个 Warp 的末线程将 Warp 总和写入共享内存。
-    if (lane == WARP - 1) warp_sums[warp] = value;
+    float v = (id < N) ? A[id] : 0.0f;
+    s[t] = v;
     __syncthreads();
 
-    // 阶段 2：第一个 Warp 对 8 个 Warp 总和做 Scan。
-    if (warp == 0) {
-        float sum = (lane < WARPS_PER_BLOCK) ? warp_sums[lane] : 0.0f;
-        sum = warp_scan(sum);
-        if (lane < WARPS_PER_BLOCK) warp_sums[lane] = sum;
+    // Upsweep：归约树，计算各级区间和
+    for (int offset = 1; offset < BLOCK; offset *= 2) {
+        int idx = (t + 1) * 2 * offset - 1;
+
+        if (idx < BLOCK)
+            s[idx] += s[idx - offset];
+
+        __syncthreads();
+    }
+
+    // 保存当前 Block 的总和
+    if (t == 0) {
+        if (block_sums != nullptr)
+            block_sums[blockIdx.x] = s[BLOCK - 1];
+
+        s[BLOCK - 1] = 0.0f;
     }
     __syncthreads();
 
-    // 阶段 3：叠加前面所有 Warp 的总和。
-    if (warp > 0) value += warp_sums[warp - 1];
+    // Downsweep：构造 Exclusive Scan
+    for (int offset = BLOCK / 2; offset > 0; offset /= 2) {
+        int idx = (t + 1) * 2 * offset - 1;
 
-    if (idx < n) output[idx] = value;
+        if (idx < BLOCK) {
+            float tmp = s[idx - offset];
+            s[idx - offset] = s[idx];
+            s[idx] += tmp;
+        }
 
-    // tid=255 的值等于整个 Block（包括填零位置）的总和。
-    if (block_sums != nullptr && tid == BLOCK - 1) {
-        block_sums[blockIdx.x] = value;
+        __syncthreads();
+    }
+
+    // Exclusive -> Inclusive
+    if (id < N)
+        B[id] = s[t] + v;
+}
+
+// 第三阶段：加上之前所有 Block 的总和
+__global__ void add_offsets(
+    float* B,
+    const float* scanned_sums,
+    int N
+) {
+    int id = blockIdx.x * BLOCK + threadIdx.x;
+
+    if (id < N && blockIdx.x > 0) {
+        B[id] += scanned_sums[blockIdx.x - 1];
     }
 }
 
-// block_offsets 为 Block 总和的 Inclusive Scan。
-// 第 b 个 Block 要叠加的是 block_offsets[b-1]。
-__global__ void add_offsets(float* output,
-                            const float* block_offsets,
-                            int n) {
-    const int idx = blockIdx.x * BLOCK + threadIdx.x;
-    if (blockIdx.x > 0 && idx < n) {
-        output[idx] += block_offsets[blockIdx.x - 1];
-    }
-}
+// 递归处理任意长度的数组
+void hierarchical_scan(
+    const float* A,
+    float* B,
+    int N
+) {
+    if (N <= 0) return;
 
-// 在 Host 端递归组织多个 Kernel Launch。
-void recursive_scan(const float* input, float* output, int n) {
-    const int num_blocks = (n + BLOCK - 1) / BLOCK;
+    int num_blocks = (N + BLOCK - 1) / BLOCK;
 
     float* block_sums = nullptr;
     float* scanned_sums = nullptr;
 
     if (num_blocks > 1) {
-        cudaMalloc(reinterpret_cast<void**>(&block_sums),
-                   static_cast<size_t>(num_blocks) * sizeof(float));
+        cudaMalloc(&block_sums, num_blocks * sizeof(float));
+        cudaMalloc(&scanned_sums, num_blocks * sizeof(float));
     }
 
-    block_scan<<<num_blocks, BLOCK>>>(input, output, block_sums, n);
+    // 第一阶段：局部 Scan
+    block_scan<<<num_blocks, BLOCK>>>(
+        A, B, block_sums, N
+    );
 
     if (num_blocks > 1) {
-        cudaMalloc(reinterpret_cast<void**>(&scanned_sums),
-                   static_cast<size_t>(num_blocks) * sizeof(float));
+        // 第二阶段：递归扫描各 Block 的和
+        hierarchical_scan(
+            block_sums, scanned_sums, num_blocks
+        );
 
-        recursive_scan(block_sums, scanned_sums, num_blocks);
+        // 第三阶段：添加全局偏移
+        add_offsets<<<num_blocks, BLOCK>>>(
+            B, scanned_sums, N
+        );
 
-        add_offsets<<<num_blocks, BLOCK>>>(output, scanned_sums, n);
-
-        cudaFree(scanned_sums);
         cudaFree(block_sums);
+        cudaFree(scanned_sums);
     }
 }
 
-// A、B 均为 GPU Device Pointer。若平台提供不同参数名，以平台签名为准。
 extern "C" void solve(const float* A, float* B, int N) {
-    if (N <= 0) return;
-    recursive_scan(A, B, N);
+    hierarchical_scan(A, B, N);
     cudaDeviceSynchronize();
 }
 ```
 
-> **实现说明**：为了突出算法流程，这份代码省略了 CUDA API 返回值检查与内存池优化；`cudaMalloc/cudaFree` 和末尾同步都会带来性能开销。实际提交前请按平台提供的签名编译、测试并记录测量结果。
 
 
-
-## 6. 本题收获
+## 4. 本题收获
 
 Prefix Sum 不能简单地“一个线程处理一个输出”，因为每个输出都依赖它前面的输入。核心是把这个依赖结构改写为可以并行执行的 **Scan**，并在 **Warp → Block → Grid** 的层次之间传递局部总和。
 
