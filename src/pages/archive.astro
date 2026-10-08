@@ -1,0 +1,677 @@
+---
+import { getCollection } from 'astro:content';
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+
+// 分类名称
+const categoryNames: Record<string, string> = {
+  algorithms: 'Algorithms',
+  infra: 'AI Infra',
+  projects: 'Projects',
+  research: 'Research',
+  notes: 'Notes',
+};
+
+// 自动读取全部带有 date 的文章
+const articles = (await getCollection('docs'))
+  .filter(({ id, data }) => {
+    const category = id.split('/')[0];
+
+    return (
+      category in categoryNames &&
+      id !== 'index' &&
+      !id.endsWith('/index') &&
+      data.draft !== true &&
+      data.date instanceof Date
+    );
+  })
+  .map(({ id, data }) => {
+    const category = id.split('/')[0];
+    const date = data.date as Date;
+
+    const slug = (data.slug || id)
+      .replace(/\/index$/, '')
+      .replace(/^\/|\/$/g, '');
+
+    const tags = Array.isArray(data.tags)
+      ? data.tags
+      : [];
+
+    return {
+      title: data.title,
+      description: data.description || '',
+      href: `/${slug}/`,
+      category,
+      categoryName: categoryNames[category],
+      tags,
+      date,
+      dateText: date.toISOString().slice(0, 10),
+      year: date.getUTCFullYear(),
+    };
+  })
+  .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+// 自动收集所有标签
+const tags = [...new Set(
+  articles.flatMap((article) => article.tags)
+)].sort();
+
+// 按分类自动收集标签：选中分类后，只展示该分类下真实存在的标签
+const tagsByCategory: Record<string, string[]> = Object.fromEntries(
+  Object.keys(categoryNames).map((category) => [
+    category,
+    [...new Set(
+      articles
+        .filter((article) => article.category === category)
+        .flatMap((article) => article.tags)
+    )].sort(),
+  ])
+);
+
+// 自动生成年份列表
+const years = [...new Set(
+  articles.map((article) => article.year)
+)].sort((a, b) => b - a);
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Article Archive_',
+    description: '按分类、标签与时间探索我的学习记录。',
+  }}
+>
+  <div class="geek-archive">
+
+    <!-- 页面简介 -->
+    <div class="archive-intro">
+      <span class="terminal-prompt">
+        ➜ ~ find ~/knowledge -type f
+      </span>
+
+      <p>
+        记录每一次学习、探索和思考。
+        按分类、标签或者时间检索我的知识库。
+      </p>
+
+      <div class="archive-stats">
+        <span>
+          <span class="status-dot"></span>
+          KNOWLEDGE INDEX READY
+        </span>
+        <span>{articles.length} ARTICLES INDEXED</span>
+      </div>
+    </div>
+
+    <!-- 筛选器 -->
+    <div class="archive-filter-panel">
+      <div class="filter-heading">
+        <span>01 / FILTER ARTICLES</span>
+        <span>~/archive</span>
+      </div>
+
+      <!-- not-content 避免 Starlight 的正文间距影响两个选择框的对齐 -->
+      <div class="archive-filters not-content">
+        <div class="filter-field">
+          <label for="filter-category">CATEGORY</label>
+          <select id="filter-category">
+            <option value="">全部分类</option>
+            {Object.entries(categoryNames).map(([value, label]) => (
+              <option value={value}>{label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label for="filter-tag">TAG</label>
+          <select
+            id="filter-tag"
+            data-all-tags={JSON.stringify(tags)}
+            data-tags-by-category={JSON.stringify(tagsByCategory)}
+          >
+            <option value="">全部标签</option>
+            {tags.map((tag) => (
+              <option value={tag}>{tag}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-footer">
+        <span id="filter-count" aria-live="polite">
+          {articles.length} entries found
+        </span>
+
+        <button type="button" id="reset-filters">
+          ↻ Clear filters
+        </button>
+      </div>
+    </div>
+
+    <!-- 时间线 -->
+    <div class="archive-timeline">
+      <div class="timeline-heading">
+        <span>02 / CHRONOLOGICAL LOG</span>
+        <h2>Timeline<span class="accent">_</span></h2>
+      </div>
+
+      {years.map((year) => (
+        <section
+          class="archive-year"
+          data-year-group
+        >
+          <h2 class="year-heading">{year}</h2>
+
+          <div class="archive-list">
+            {articles
+              .filter((article) => article.year === year)
+              .map((article) => (
+                <article
+                  class="archive-entry"
+                  data-entry
+                  data-category={article.category}
+                  data-tags={JSON.stringify(article.tags)}
+                >
+                  <div class="entry-header">
+                    <time datetime={article.dateText}>
+                      {article.dateText}
+                    </time>
+
+                    <span class="entry-arrow">↗</span>
+                  </div>
+
+                  <h3>
+                    <a href={article.href}>
+                      {article.title}
+                    </a>
+                  </h3>
+
+                  {article.description && (
+                    <p class="entry-description">
+                      {article.description}
+                    </p>
+                  )}
+
+                  <div class="archive-tags">
+                    <a
+                      class="category-tag"
+                      href={`/archive/?category=${encodeURIComponent(article.category)}`}
+                    >
+                      {article.categoryName}
+                    </a>
+
+                    {article.tags.map((tag) => (
+                      <a
+                        class="article-tag"
+                        href={`/archive/?tag=${encodeURIComponent(tag)}`}
+                      >
+                        #{tag}
+                      </a>
+                    ))}
+                  </div>
+                </article>
+              ))}
+          </div>
+        </section>
+      ))}
+
+      <div id="archive-empty" class="archive-empty" hidden>
+        <span>➜ ~ search</span>
+        <p>No matching articles found.</p>
+        <p>没有找到符合条件的文章。</p>
+      </div>
+    </div>
+
+    <footer class="archive-footer">
+      <span>THEVOID3301 / KNOWLEDGE ARCHIVE</span>
+      <span>EOF<span class="accent">_</span></span>
+    </footer>
+
+  </div>
+</StarlightPage>
+
+<script>
+  const categorySelect = document.querySelector<HTMLSelectElement>('#filter-category');
+  const tagSelect = document.querySelector<HTMLSelectElement>('#filter-tag');
+  const resetButton = document.querySelector<HTMLButtonElement>('#reset-filters');
+  const countElement = document.querySelector<HTMLElement>('#filter-count');
+  const emptyElement = document.querySelector<HTMLElement>('#archive-empty');
+
+  // Astro 在构建时从 Markdown 的 Frontmatter 生成标签索引。
+  const allTags: string[] = JSON.parse(tagSelect?.dataset.allTags || '[]');
+  const tagsByCategory: Record<string, string[]> = JSON.parse(
+    tagSelect?.dataset.tagsByCategory || '{}'
+  );
+
+  // 切换分类后重建 TAG 选项。如果原标签不属于新分类，就清空它。
+  function refreshTagOptions(category: string, preferredTag = '') {
+    if (!tagSelect) return;
+
+    const availableTags = category
+      ? (tagsByCategory[category] || [])
+      : allTags;
+
+    tagSelect.replaceChildren(
+      new Option('全部标签', ''),
+      ...availableTags.map((tag) => new Option(tag, tag))
+    );
+
+    tagSelect.value = availableTags.includes(preferredTag)
+      ? preferredTag
+      : '';
+  }
+
+  // URL 中的 category/tag 也要按照这个顺序恢复，否则会出现失效标签。
+  function readFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const requestedCategory = params.get('category') || '';
+    const requestedTag = params.get('tag') || '';
+
+    const validCategory = categorySelect &&
+      [...categorySelect.options].some((option) => option.value === requestedCategory)
+      ? requestedCategory
+      : '';
+
+    if (categorySelect) categorySelect.value = validCategory;
+    refreshTagOptions(validCategory, requestedTag);
+  }
+
+  function updateArticles() {
+    const category = categorySelect?.value || '';
+    const tag = tagSelect?.value || '';
+    let visibleCount = 0;
+
+    document.querySelectorAll<HTMLElement>('[data-entry]').forEach((entry) => {
+      const articleTags: string[] = JSON.parse(entry.dataset.tags || '[]');
+      const categoryMatches = !category || entry.dataset.category === category;
+      const tagMatches = !tag || articleTags.includes(tag);
+      const visible = categoryMatches && tagMatches;
+
+      entry.hidden = !visible;
+      if (visible) visibleCount++;
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-year-group]').forEach((group) => {
+      group.hidden = !group.querySelector('[data-entry]:not([hidden])');
+    });
+
+    if (countElement) countElement.textContent = `${visibleCount} entries found`;
+    if (emptyElement) emptyElement.hidden = visibleCount > 0;
+  }
+
+  function updateUrl() {
+    const url = new URL(window.location.href);
+    const category = categorySelect?.value || '';
+    const tag = tagSelect?.value || '';
+
+    if (category) url.searchParams.set('category', category);
+    else url.searchParams.delete('category');
+
+    if (tag) url.searchParams.set('tag', tag);
+    else url.searchParams.delete('tag');
+
+    window.history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    updateArticles();
+  }
+
+  categorySelect?.addEventListener('change', () => {
+    // 尽可能保留旧标签，但仅当新分类确实有这个标签。
+    refreshTagOptions(categorySelect.value, tagSelect?.value || '');
+    updateUrl();
+  });
+
+  tagSelect?.addEventListener('change', updateUrl);
+
+  resetButton?.addEventListener('click', () => {
+    if (categorySelect) categorySelect.value = '';
+    refreshTagOptions('');
+    updateUrl();
+  });
+
+  window.addEventListener('popstate', () => {
+    readFiltersFromUrl();
+    updateArticles();
+  });
+
+  readFiltersFromUrl();
+  updateArticles();
+</script>
+
+<style>
+  /* ===== Base ===== */
+
+  .geek-archive {
+    --archive-accent: var(--sl-color-accent);
+    --archive-border: var(--sl-color-gray-5);
+    --archive-muted: var(--sl-color-gray-3);
+
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .accent {
+    color: var(--archive-accent);
+  }
+
+  /* ===== Intro ===== */
+
+  .archive-intro {
+    margin: 1rem 0 2.5rem;
+  }
+
+  .terminal-prompt {
+    display: block;
+    font-family: Consolas, monospace;
+    font-size: 0.85rem;
+    color: var(--archive-accent);
+    margin-bottom: 1rem;
+  }
+
+  .archive-intro p {
+    margin: 0;
+    color: var(--archive-muted);
+    line-height: 1.8;
+  }
+
+  .archive-stats {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+
+    font: 0.7rem Consolas, monospace;
+    letter-spacing: 0.05em;
+    color: var(--archive-accent);
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 0.4rem;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 8px #34d39955;
+  }
+
+  /* ===== Filter Panel ===== */
+
+  .archive-filter-panel {
+    padding: 1.5rem;
+    border: 1px solid var(--archive-border);
+    border-radius: 12px;
+    background: var(--sl-color-bg-sidebar);
+    margin-bottom: 3rem;
+  }
+
+  .filter-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    font: 0.72rem Consolas, monospace;
+    color: var(--archive-accent);
+  }
+
+  .archive-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  /* 两个控件都使用相同的行高、间距，确保顶边和底边对齐 */
+  .archive-filters .filter-field {
+    display: grid;
+    grid-template-rows: 1rem 2.75rem;
+    gap: 0.6rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .archive-filters .filter-field label {
+    display: block;
+    margin: 0;
+    padding: 0;
+    font: 0.72rem/1rem Consolas, monospace;
+    letter-spacing: 0.05em;
+    color: var(--archive-muted);
+  }
+
+  .archive-filters .filter-field select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 2.75rem;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 0.7rem;
+
+    background: var(--sl-color-bg);
+    color: var(--sl-color-text);
+    border: 1px solid var(--archive-border);
+    border-radius: 7px;
+
+    font-size: 0.85rem;
+    line-height: normal;
+    cursor: pointer;
+  }
+
+  .archive-filters select:focus-visible {
+    outline: 2px solid var(--archive-accent);
+    outline-offset: 2px;
+  }
+
+  .filter-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.3rem;
+
+    font: 0.75rem Consolas, monospace;
+    color: var(--archive-muted);
+  }
+
+  #reset-filters {
+    padding: 0.3rem 0.6rem;
+    border: 0;
+    background: transparent;
+    color: var(--archive-accent);
+    cursor: pointer;
+    font: inherit;
+  }
+
+  #reset-filters:hover {
+    text-decoration: underline;
+  }
+
+  /* ===== Timeline Heading ===== */
+
+  .timeline-heading {
+    margin-bottom: 2.2rem;
+  }
+
+  .timeline-heading > span {
+    font: 0.75rem Consolas, monospace;
+    color: var(--archive-accent);
+    letter-spacing: 0.1em;
+  }
+
+  .timeline-heading h2 {
+    border: 0;
+    padding: 0;
+    margin: 0.5rem 0;
+
+    font-size: 1.9rem;
+  }
+
+  /* ===== Timeline ===== */
+
+  .archive-year {
+    margin: 2.5rem 0;
+  }
+
+  .year-heading {
+    border: 0;
+    padding: 0;
+    margin: 0 0 1.3rem;
+
+    font-family: Consolas, monospace;
+    font-size: 1.35rem;
+    color: var(--archive-accent);
+  }
+
+  .archive-list {
+    margin-left: 0.4rem;
+    padding-left: 1.5rem;
+    border-left: 2px solid var(--archive-border);
+  }
+
+  .archive-entry {
+    position: relative;
+    padding: 0.4rem 0 1.8rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--archive-border);
+  }
+
+  .archive-entry::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.5rem - 5px);
+    top: 0.7rem;
+
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    background: var(--archive-accent);
+  }
+
+  .entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .entry-header time {
+    font: 0.77rem Consolas, monospace;
+    color: var(--archive-muted);
+  }
+
+  .entry-arrow {
+    color: var(--archive-accent);
+  }
+
+  .archive-entry h3 {
+    margin: 0.7rem 0;
+    padding: 0;
+    font-size: 1.1rem;
+  }
+
+  .archive-entry h3 a {
+    color: var(--sl-color-text);
+    text-decoration: none;
+  }
+
+  .archive-entry h3 a:hover {
+    color: var(--archive-accent);
+  }
+
+  .entry-description {
+    margin: 0.5rem 0;
+    font-size: 0.87rem;
+    color: var(--archive-muted);
+    line-height: 1.7;
+  }
+
+  /* ===== Tags ===== */
+
+  .archive-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .archive-tags a {
+    display: inline-block;
+    padding: 0.3rem 0.65rem;
+
+    border: 1px solid var(--archive-border);
+    border-radius: 6px;
+
+    font: 0.73rem Consolas, monospace;
+    color: var(--archive-accent);
+    text-decoration: none;
+
+    transition:
+      transform 0.2s,
+      border-color 0.2s;
+  }
+
+  .archive-tags a:hover {
+    transform: translateY(-2px);
+    border-color: var(--archive-accent);
+    text-decoration: none;
+  }
+
+  .category-tag {
+    background: var(--sl-color-accent-low);
+  }
+
+  /* ===== Empty / Footer ===== */
+
+  .archive-empty {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--archive-muted);
+    font-family: Consolas, monospace;
+  }
+
+  .archive-empty span {
+    color: var(--archive-accent);
+  }
+
+  .archive-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+
+    border-top: 1px solid var(--archive-border);
+    color: var(--archive-muted);
+    font: 0.7rem Consolas, monospace;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (max-width: 640px) {
+    .archive-filters {
+      grid-template-columns: 1fr;
+    }
+
+    .archive-filter-panel {
+      padding: 1rem;
+    }
+
+    .archive-list {
+      padding-left: 1rem;
+    }
+
+    .archive-entry::before {
+      left: calc(-1rem - 5px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .archive-tags a {
+      transition: none;
+    }
+  }
+</style>

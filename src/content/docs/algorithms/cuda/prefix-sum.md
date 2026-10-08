@@ -107,7 +107,9 @@ __global__ void block_scan(
     __syncthreads();
 
     // Upsweep：归约树，计算各级区间和
+    // 开始二叉规约树, 一共log2(N)次循环
     for (int offset = 1; offset < BLOCK; offset *= 2) {
+        // 等差数列公式推导
         int idx = (t + 1) * 2 * offset - 1;
 
         if (idx < BLOCK)

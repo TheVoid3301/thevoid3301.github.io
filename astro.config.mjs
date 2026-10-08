@@ -33,6 +33,9 @@ export default defineConfig({
 				'katex/dist/katex.min.css',
 			],
 			title: "TheVoid3301's Blog",
+			components: {
+				PageTitle: './src/components/AriticleTitle.astro',
+			},
 			locales: {
 				root: {
 					label: '简体中文',

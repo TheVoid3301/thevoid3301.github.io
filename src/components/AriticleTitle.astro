@@ -1,0 +1,142 @@
+
+---
+import DefaultPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+
+const { id, entry } = Astro.locals.starlightRoute;
+
+const categories: Record<string, string> = {
+  algorithms: 'Algorithms',
+  infra: 'AI Infra',
+  projects: 'Projects',
+  research: 'Research',
+};
+
+const category = id.split('/')[0];
+const categoryName = categories[category];
+
+// 只在技术文章显示，不影响首页、分类首页和碎碎念
+const isArticle =
+  Boolean(categoryName) &&
+  id.includes('/') &&
+  !id.endsWith('/index');
+
+const date = entry.data.date instanceof Date
+  ? entry.data.date.toISOString().slice(0, 10)
+  : null;
+
+const tags = Array.isArray(entry.data.tags)
+  ? entry.data.tags
+  : [];
+---
+
+<!-- 保留 Starlight 默认文章标题 -->
+<DefaultPageTitle {...Astro.props}>
+  <slot />
+</DefaultPageTitle>
+
+{isArticle && (
+  <div class="article-meta">
+
+    <div class="meta-info">
+
+      {date && (
+        <span class="meta-date">
+          <span aria-hidden="true">◷</span>
+          <time datetime={date}>{date}</time>
+        </span>
+      )}
+
+      <span class="meta-category">
+        <span aria-hidden="true">⌁</span>
+        {categoryName}
+      </span>
+
+    </div>
+
+    {tags.length > 0 && (
+      <div class="meta-tags">
+        {tags.map((tag) => (
+          <a
+            href={`/archive/?tag=${encodeURIComponent(tag)}`}
+            class="meta-tag"
+          >
+            # {tag}
+          </a>
+        ))}
+      </div>
+    )}
+
+  </div>
+)}
+
+<style>
+  .article-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 0.8rem 0 1.6rem;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+  }
+
+  .meta-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+
+    font-family: Consolas, "JetBrains Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .meta-date,
+  .meta-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .meta-tag {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.25rem 0.7rem;
+    border-radius: 6px;
+
+    background: var(--sl-color-accent-low);
+    border: 1px solid var(--sl-color-gray-5);
+    color: var(--sl-color-accent-high);
+
+    font-family: Consolas, monospace;
+    font-size: 0.75rem;
+    text-decoration: none;
+
+    transition:
+      border-color 0.2s,
+      transform 0.2s;
+  }
+
+  .meta-tag:hover {
+    border-color: var(--sl-color-accent);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  .meta-tag:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .meta-tag {
+      transition: none;
+    }
+  }
+</style>
