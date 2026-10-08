@@ -1,0 +1,424 @@
+
+/* =======================================
+   TheVoid3301 · Geek Theme
+   ======================================= */
+
+:root {
+  --sl-font-mono: "Cascadia Code", "JetBrains Mono",
+    "Consolas", monospace;
+
+  --geek-accent: #087f73;
+  --geek-panel: #ffffff;
+  --geek-border: rgba(50, 92, 110, 0.2);
+  --geek-text: #172b3a;
+  --geek-muted: #52697a;
+}
+
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #103a38;
+  --sl-color-accent: #5eead4;
+  --sl-color-accent-high: #c5fff0;
+
+  --geek-accent: #5eead4;
+  --geek-panel: #101b29;
+  --geek-border: rgba(128, 173, 191, 0.18);
+  --geek-text: #edf5fa;
+  --geek-muted: #94aabd;
+}
+
+/* -------- 首页背景 -------- */
+
+body:has(.geek-home) {
+  background-image:
+    radial-gradient(
+      ellipse at 50% 15%,
+      rgba(35, 190, 175, 0.055),
+      transparent 55%
+    );
+}
+
+/* -------- Hero -------- */
+
+body:has(.geek-home) .hero {
+  display: block;
+  text-align: center;
+  padding-block: 4rem 2rem;
+}
+
+body:has(.geek-home) .hero .stack,
+body:has(.geek-home) .hero .copy {
+  align-items: center;
+  text-align: center;
+  margin-inline: auto;
+}
+
+body:has(.geek-home) .hero .actions {
+  justify-content: center;
+}
+
+body:has(.geek-home) .hero h1 {
+  font-family: var(--sl-font-mono);
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  line-height: 1.15;
+
+  background: linear-gradient(
+    110deg,
+    var(--geek-text) 30%,
+    var(--geek-accent) 95%
+  );
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+body:has(.geek-home) .hero .tagline {
+  font-family: var(--sl-font-mono);
+  letter-spacing: 0.02em;
+  color: var(--geek-muted);
+}
+
+/* -------- Main Container -------- */
+
+.geek-home {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 0.5rem 3rem;
+}
+
+.geek-home p {
+  margin: 0;
+}
+
+.geek-intro {
+  text-align: center;
+  margin: 0 auto 2.5rem;
+}
+
+.geek-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.9rem;
+
+  border: 1px solid var(--geek-border);
+  border-radius: 100px;
+
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  color: var(--geek-accent);
+}
+
+.geek-status-dot {
+  width: 7px;
+  height: 7px;
+  background: #35d3a2;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #35d3a280;
+}
+
+.geek-intro-text {
+  margin-top: 1.2rem !important;
+  color: var(--geek-muted);
+  line-height: 1.9;
+  font-size: 0.95rem;
+}
+
+/* -------- Terminal Window -------- */
+
+.geek-terminal {
+  overflow: hidden;
+  margin: 2rem auto 4rem;
+
+  background: #0b1320;
+  border: 1px solid #263648;
+  border-radius: 14px;
+
+  box-shadow:
+    0 20px 65px rgba(0, 0, 0, 0.13),
+    0 0 35px rgba(94, 234, 212, 0.035);
+}
+
+.geek-terminal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 43px;
+  padding: 0 1rem;
+
+  background: #111d2c;
+  border-bottom: 1px solid #263648;
+
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  color: #90a6ba;
+}
+
+.geek-window-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.geek-window-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fb7185;
+}
+
+.geek-window-dots span:nth-child(2) {
+  background: #fbbf24;
+}
+
+.geek-window-dots span:nth-child(3) {
+  background: #34d399;
+}
+
+.geek-terminal-label {
+  color: #60788e;
+}
+
+.geek-terminal-body {
+  padding: 1.6rem 1.8rem 2rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.85rem;
+  line-height: 2;
+  color: #dce6f1;
+  overflow-wrap: anywhere;
+}
+
+.geek-terminal-body p {
+  margin: 0 !important;
+}
+
+.geek-output {
+  color: #9cb2c6;
+  padding-left: 0.6rem;
+  margin-bottom: 0.6rem !important;
+}
+
+.geek-prompt {
+  color: #5eead4;
+  font-weight: bold;
+}
+
+.geek-path {
+  color: #a78bfa;
+}
+
+.geek-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1rem;
+  background: #5eead4;
+  vertical-align: -2px;
+  animation: geek-blink 1s step-end infinite;
+}
+
+@keyframes geek-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* -------- Section Heading -------- */
+
+.geek-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.7rem;
+}
+
+.geek-overline {
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--geek-accent);
+}
+
+.geek-section-heading h2 {
+  border: 0;
+  margin: 0.5rem 0;
+  padding: 0;
+
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 750;
+  color: var(--geek-text);
+}
+
+.geek-section-heading p,
+.geek-section-aside {
+  font-size: 0.85rem;
+  color: var(--geek-muted);
+}
+
+.geek-section-aside {
+  font-family: var(--sl-font-mono);
+}
+
+.geek-accent {
+  color: var(--geek-accent);
+}
+
+/* -------- Knowledge Cards -------- */
+
+.geek-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.geek-home .geek-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  min-width: 0;
+  min-height: 235px;
+  padding: 1.5rem;
+
+  background: var(--geek-panel);
+  border: 1px solid var(--geek-border);
+  border-radius: 12px;
+
+  color: var(--geek-text);
+  text-decoration: none;
+
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.geek-home .geek-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--geek-accent);
+  box-shadow: 0 12px 40px rgba(40, 180, 165, 0.1);
+  text-decoration: none;
+}
+
+.geek-home .geek-card:focus-visible {
+  outline: 2px solid var(--geek-accent);
+  outline-offset: 3px;
+}
+
+.geek-card-top {
+  display: flex;
+  justify-content: space-between;
+
+  font-family: var(--sl-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--geek-accent);
+}
+
+.geek-arrow {
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.geek-card:hover .geek-arrow {
+  transform: translate(3px, -3px);
+}
+
+.geek-card-icon {
+  margin-top: 0.3rem;
+  color: var(--geek-accent);
+  font-family: var(--sl-font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.geek-home .geek-card strong {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--geek-text);
+}
+
+.geek-card-desc {
+  flex: 1;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--geek-muted);
+}
+
+.geek-card-tags {
+  font-family: var(--sl-font-mono);
+  font-size: 0.69rem;
+  color: var(--geek-accent);
+  overflow-wrap: anywhere;
+}
+
+.geek-card-wide {
+  grid-column: span 2;
+  min-height: 190px !important;
+}
+
+/* -------- Footer -------- */
+
+.geek-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+
+  margin-top: 3rem;
+  padding-top: 1.4rem;
+
+  border-top: 1px solid var(--geek-border);
+
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  color: var(--geek-muted);
+}
+
+/* -------- Mobile -------- */
+
+@media (max-width: 640px) {
+  body:has(.geek-home) .hero {
+    padding-block: 2.5rem 1.5rem;
+  }
+
+  .geek-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .geek-card-wide {
+    grid-column: auto;
+  }
+
+  .geek-home .geek-card {
+    min-height: 205px;
+  }
+
+  .geek-terminal-body {
+    padding: 1.2rem;
+    font-size: 0.72rem;
+  }
+
+  .geek-section-aside {
+    display: none;
+  }
+
+  .geek-footer {
+    flex-direction: column;
+  }
+}
+
+/* Respect reduced motion preferences */
+
+@media (prefers-reduced-motion: reduce) {
+  .geek-cursor {
+    animation: none;
+  }
+
+  .geek-home .geek-card,
+  .geek-arrow {
+    transition: none;
+  }
+}

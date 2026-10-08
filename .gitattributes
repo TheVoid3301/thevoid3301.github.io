@@ -1,0 +1,13 @@
+# 自动识别文本文件
+* text=auto
+
+# 源码和文档统一使用 LF
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.ts    text eol=lf
+*.md    text eol=lf
+*.mdx   text eol=lf
+*.css   text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf

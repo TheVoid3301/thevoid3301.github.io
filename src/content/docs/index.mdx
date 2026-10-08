@@ -1,40 +1,178 @@
+
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: TheVoid3301
+description: Personal Knowledge Base — Algorithms, AI Infra, Systems and Research
+template: splash
+tableOfContents: false
+
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  title: 'TheVoid3301_'
+  tagline: 'Algorithms · AI Infra · Systems · Research'
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Explore Knowledge Base
+      link: /algorithms/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
+      variant: primary
+    - text: GitHub
+      link: https://github.com/thevoid3301
       icon: external
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+<div className="geek-home">
 
-## Next steps
+  <div className="geek-intro">
+    <span className="geek-status">
+      <span className="geek-status-dot"></span>
+      PERSONAL KNOWLEDGE BASE
+    </span>
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
-</CardGrid>
+    <p className="geek-intro-text">
+      探索系统底层，理解计算本质。
+      <br />
+      记录算法、AI 基础设施、工程实践与科研探索。
+    </p>
+  </div>
+
+  <div className="geek-terminal">
+    <div className="geek-terminal-bar">
+      <div className="geek-window-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span>thevoid3301@knowledge: ~</span>
+      <span className="geek-terminal-label">zsh</span>
+    </div>
+
+    <div className="geek-terminal-body">
+      <p>
+        <span className="geek-prompt">➜</span>
+        <span className="geek-path"> ~ </span>
+        whoami
+      </p>
+
+      <p className="geek-output">
+        Developer / Learner / Builder
+      </p>
+
+      <p>
+        <span className="geek-prompt">➜</span>
+        <span className="geek-path"> ~ </span>
+        cat interests.txt
+      </p>
+
+      <p className="geek-output">
+        CUDA · Triton · LLM Inference · Algorithms
+      </p>
+
+      <p>
+        <span className="geek-prompt">➜</span>
+        <span className="geek-path"> ~ </span>
+        echo "Stay curious. Keep building."
+      </p>
+
+      <p className="geek-output">
+        Stay curious. Keep building.
+      </p>
+
+      <p>
+        <span className="geek-prompt">➜</span>
+        <span className="geek-path"> ~ </span>
+        <span className="geek-cursor"></span>
+      </p>
+    </div>
+  </div>
+
+  <div className="geek-section-heading">
+    <div>
+      <span className="geek-overline">00 / EXPLORE</span>
+      <h2>Knowledge Base<span className="geek-accent">.</span></h2>
+      <p>选择一个方向，开始探索。</p>
+    </div>
+    <span className="geek-section-aside">ls ~/knowledge/</span>
+  </div>
+
+  <div className="geek-grid">
+
+    <a className="geek-card geek-card-wide" href="/notes/">
+      <span className="geek-card-top">
+        <span>00 / PERSONAL LOGS</span>
+        <span className="geek-arrow">↗</span>
+      </span>
+      <span className="geek-card-icon">✳</span>
+      <strong>碎碎念 · Random Thoughts</strong>
+      <span className="geek-card-desc">
+        生活、思考、偶尔的牢骚，以及代码之外的世界。
+      </span>
+      <span className="geek-card-tags">
+        Thoughts / Life / Everything Else
+      </span>
+    </a>
+
+    <a className="geek-card" href="/algorithms/">
+      <span className="geek-card-top">
+        <span>01 / ALGORITHMS</span>
+        <span className="geek-arrow">↗</span>
+      </span>
+      <span className="geek-card-icon">{"{ }"}</span>
+      <strong>算法学习</strong>
+      <span className="geek-card-desc">
+        从数据结构到算法设计，记录问题的解法与思考。
+      </span>
+      <span className="geek-card-tags">
+        DSA / DP / Graph / LeetCode
+      </span>
+    </a>
+
+    <a className="geek-card" href="/infra/">
+      <span className="geek-card-top">
+        <span>02 / AI INFRA</span>
+        <span className="geek-arrow">↗</span>
+      </span>
+      <span className="geek-card-icon">⚡</span>
+      <strong>AI Infrastructure</strong>
+      <span className="geek-card-desc">
+        深入 GPU 编程、模型推理、并行计算与系统优化。
+      </span>
+      <span className="geek-card-tags">
+        CUDA / Triton / PyTorch / LLM
+      </span>
+    </a>
+
+    <a className="geek-card" href="/projects/">
+      <span className="geek-card-top">
+        <span>03 / PROJECTS</span>
+        <span className="geek-arrow">↗</span>
+      </span>
+      <span className="geek-card-icon">~/</span>
+      <strong>项目实践</strong>
+      <span className="geek-card-desc">
+        从阅读源码到独立实现，记录真实的工程构建过程。
+      </span>
+      <span className="geek-card-tags">
+        nano-vLLM / Kernels / Systems
+      </span>
+    </a>
+
+    <a className="geek-card" href="/research/">
+      <span className="geek-card-top">
+        <span>04 / RESEARCH</span>
+        <span className="geek-arrow">↗</span>
+      </span>
+      <span className="geek-card-icon">∑</span>
+      <strong>科研笔记</strong>
+      <span className="geek-card-desc">
+        论文阅读、实验设计、模型探索与研究思考。
+      </span>
+      <span className="geek-card-tags">
+        Papers / AI4S / Experiments
+      </span>
+    </a>
+
+  </div>
+
+  <div className="geek-footer">
+    <span>© TheVoid3301 · Built with Astro Starlight</span>
+    <span>EOF<span className="geek-accent">_</span></span>
+  </div>
+
+</div>
