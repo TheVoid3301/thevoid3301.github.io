@@ -3,9 +3,9 @@ title: "Prefix Sum：CUDA 并行前缀和"
 description: "LeetGPU Prefix Sum 题解"
 date: 2026-10-8
 tags:
+    - Algorithm
     - CUDA
     - GPU
-    - Algorithm
 sidebar:
     order: 1
 ---

@@ -3,9 +3,9 @@ title: "2D Convolution: 二维卷积"
 description: "2D Convolution 题解"
 date: 2026-10-9
 tags:
+    - Algorithm
     - CUDA
     - GPU
-    - Algorithm
 sidebar:
     order: 2
 ---
@@ -291,10 +291,10 @@ extern "C" void solve(
 ![2d-convolution-2](./images/2d-convolution-2.svg)
 示意：为计算一个 4×4 的输出 Tile，3×3 卷积必须读取 6×6 的输入区域。
 通用公式是：
-\[
+$$
 H_{\text{shared}}=H_{\text{tile}}+K_h-1
-\]
+$$
 
-\[
+$$
 W_{\text{shared}}=W_{\text{tile}}+K_w-1
-\]
+$$

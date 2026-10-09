@@ -1,0 +1,298 @@
+---
+title: "记录一次GPT回答: 算子编程语言和系统级编程语言列举"
+description: "记录一次GPT回答: 算子编程语言和系统级编程语言列举. "
+date: 2026-10-09
+tags:
+  - GPT
+  - Programming Language
+  - Rubbish
+featured: true
+---
+
+# GPU 算子编程语言与系统级编程语言大全
+
+首先要明确：能编写 GPU 算子的语言，不一定是系统级编程语言；系统级编程语言，也不一定能够直接编写 GPU Kernel。
+
+例如：
+
+- Python：不是典型的系统级语言，但通过 Triton、CuTe DSL 等可以编写高性能 GPU Kernel。
+- Rust：既是系统级语言，也可以通过 CubeCL、cuda-oxide 等编写 GPU Kernel。
+- Zig：是系统级语言，也有将 Zig Kernel 编译成 NVIDIA PTX 的实验性项目。
+- C++：既能写操作系统、数据库、编译器，又拥有成熟的 CUDA GPU Kernel 开发生态。
+
+另外，“所有”在这里没有严格封闭的名单：语言可能通过新编译器获得 GPU 后端，“系统级语言”也没有统一的官方认定标准。下面尽可能全面地列出有代表性、可实际使用或值得关注的语言，并标明成熟度。
+
+## 一、能够编写 GPU 算子的编程语言
+
+### 1. 通用编程语言
+
+| 编程语言       | 代表性 GPU Kernel 技术                          | GPU 编程支持      |
+| ---------- | ------------------------------------------ | ------------- |
+| C++        | CUDA C++、HIP、SYCL、OpenCL C++、Metal C++     | 成熟            |
+| C          | CUDA C、OpenCL C、OpenACC、OpenMP Offload     | 成熟            |
+| Python     | Triton、CuTe DSL、cuTile、TileLang、Numba-CUDA | 成熟            |
+| Rust       | CubeCL、cuda-oxide、cuTile Rust、rust-gpu     | 发展中           |
+| Julia      | CUDA.jl、AMDGPU.jl、KernelAbstractions.jl    | 较成熟           |
+| Fortran    | CUDA Fortran、OpenACC、OpenMP Offload        | 成熟            |
+| Mojo       | Mojo GPU Programming                       | 发展中           |
+| Zig        | zoxide、zig_cuda、NVPTX                      | 实验性           |
+| C#         | ILGPU、Alea GPU                             | 有可用方案         |
+| Java       | TornadoVM、Aparapi                          | 有可用方案         |
+| Kotlin     | TornadoVM/JVM 相关方案                         | 依赖框架与兼容性      |
+| Scala      | JVM GPU 编程和 DSL 项目                         | 小众            |
+| Swift      | Metal 主机接口及相关 GPU DSL                      | 依赖具体框架        |
+| D          | LDC DCompute                               | 实验性、小众        |
+| Haskell    | Accelerate、Obsidian                        | 研究型           |
+| Chapel     | GPU Locale、GPU Kernel Offloading           | HPC 方向        |
+| JavaScript | GPU.js、WebGPU（WGSL）                        | 适合 Web GPU    |
+| TypeScript | WebGPU（WGSL）、GPU.js                        | 适合 Web GPU    |
+| Go         | CUDA/OpenCL 绑定、GPU DSL 项目                  | 主要是 Host 端    |
+| Nim        | CUDA/OpenCL 绑定、代码生成                        | 主要依赖外部工具      |
+| Odin       | CUDA/OpenCL/Vulkan 绑定                      | 主要是 Host 端    |
+| R          | GPU 计算接口、CUDA/OpenCL 扩展                    | 主要是调用或绑定      |
+| MATLAB     | GPU Coder、CUDAKernel 接口                    | 可生成或调用 GPU 代码 |
+
+其中，Rust 的 NVIDIA CUDA Rust 项目已经同时提供 SIMT 和 Tile 两种 GPU Kernel 编程模型；Julia 的 CUDA.jl 可以直接以 Julia 函数编写 Kernel；Fortran 则有 NVIDIA 正式维护的 CUDA Fortran 编程工具链。
+
+[image](https://www.google.com/s2/favicons?domain=https://github.com\&sz=32)
+
+GitHub
+
++2
+
+
+
+需要强调，表中后几种语言拥有 GPU 编程途径不代表其标准编译器能够直接生成 CUDA Kernel。例如 Go、Odin、Nim 和 R，更多情况下是通过绑定、代码生成或独立的设备端语言完成计算。
+
+### 2. 专门面向 GPU 的语言和 DSL
+
+这类语言与普通通用语言不同，往往直接围绕 GPU 并行执行模型设计。
+
+| 语言 / DSL                     | 主要使用场景                         |
+| ---------------------------- | ------------------------------ |
+| CUDA C++                     | NVIDIA GPU 计算                  |
+| OpenCL C                     | 跨平台异构设备计算                      |
+| HIP C++                      | AMD GPU 和 CUDA 兼容迁移            |
+| SYCL                         | 基于 C++ 的异构计算                   |
+| WGSL                         | WebGPU Compute Shader          |
+| GLSL                         | OpenGL / Vulkan Compute Shader |
+| HLSL                         | DirectX Compute Shader         |
+| Metal Shading Language（MSL）  | Apple GPU Compute              |
+| Slang                        | 跨平台 Shader 与 GPU 计算            |
+| PTX                          | NVIDIA GPU 虚拟指令集               |
+| Futhark                      | 函数式数据并行 GPU 编程语言               |
+| Triton Language              | AI 算子 Tile 编程 DSL              |
+| Pallas                       | JAX GPU / TPU Kernel DSL       |
+| Taichi Language              | 科学计算、图形和仿真                     |
+| Halide                       | 图像处理和计算调度                      |
+| ISPC                         | 数据并行计算，部分 GPU 编译后端             |
+| TVM TensorIR                 | 张量计算调度与代码生成                    |
+| MLIR GPU / TritonGPU Dialect | GPU 编译器中间表示                    |
+
+其中 PTX 和 MLIR Dialect 更准确地说是编译器层面的语言或中间表示，并不是常规的应用开发语言。
+
+这也解释了为什么你可以在 Python 中写 Triton Kernel：Python 负责提供语法外壳，Triton 编译器负责把受支持的 Kernel 代码转换为 GPU 能执行的程序。
+
+## 二、系统级编程语言大全
+
+所谓系统级编程语言（Systems Programming Language），通常指适合开发操作系统、编译器、数据库内核、驱动程序、运行时、网络基础设施等底层软件的语言。
+
+我将它们分为四类。
+
+### 1. 经典及主流系统编程语言
+
+| 语言            | 内存管理特点               | 典型用途               | 生态成熟度 |
+| ------------- | -------------------- | ------------------ | ----- |
+| C             | 手动管理                 | OS、驱动、嵌入式          | 极高    |
+| C++           | 手动管理、RAII            | 游戏引擎、数据库、AI Infra  | 极高    |
+| Rust          | 所有权、借用检查             | OS、网络、存储、安全系统      | 高     |
+| Zig           | 显式分配器                | 系统软件、编译器、嵌入式       | 发展中   |
+| Ada           | 可控内存与运行时             | 航空航天、安全关键系统        | 成熟    |
+| SPARK         | Ada 子集、形式化验证         | 高可靠性系统             | 成熟    |
+| D             | GC、手动及其他管理方式         | 原生应用、系统软件          | 较成熟   |
+| Nim           | ARC/ORC、显式控制等        | 原生工具、系统应用          | 较成熟   |
+| Go            | 垃圾回收                 | 云原生、网络、分布式系统       | 极高    |
+| Swift         | ARC                  | Apple 系统软件、原生应用    | 高     |
+| Objective-C   | ARC、手动引用计数           | Apple 平台系统框架       | 成熟    |
+| Objective-C++ | C++ 与 Objective-C 混合 | Apple 底层框架         | 成熟    |
+| Fortran       | 静态、自动、动态分配           | HPC、数值计算           | 极高    |
+| Assembly      | 完全手动                 | Bootloader、内核、指令优化 | 极高    |
+
+这里需要特别区分 Go 和 C：Go 非常适合构建分布式系统、数据库服务、云原生基础设施，但由于运行时、垃圾回收等设计，它不属于典型的裸机底层语言。
+
+### 2. 新兴系统编程语言
+
+这些是你喜欢研究系统底层时值得了解的语言。
+
+| 语言                                     | 设计定位               | 状态     |
+| -------------------------------------- | ------------------ | ------ |
+| [Odin](https://odin-lang.org/)         | 数据导向、高性能系统编程       | 活跃     |
+| [C3](https://c3-lang.org/)             | 现代化 C 风格原生语言       | 活跃     |
+| [Hare](https://harelang.org/)          | 简洁、可预测、偏 Unix 系统编程 | 小众     |
+| [Jai](https://www.jaitoolkit.com/)     | 编译期编程、游戏及高性能开发     | 尚未广泛开放 |
+| [Beef](https://www.beeflang.org/)      | 面向游戏开发和高性能原生软件     | 小众     |
+| [V](https://vlang.io/)                 | 简洁语法、编译式原生开发       | 小众     |
+| [Carbon](https://carbon-lang.dev/)     | 实验性 C++ 后继语言       | 实验阶段   |
+| [Vale](https://vale.dev/)              | 内存安全原生语言研究         | 已归档    |
+| Valen                                  | Vale 设计思想的延续       | 早期研究   |
+| [Pony](https://www.ponylang.io/)       | Actor、并发安全         | 小众     |
+| [Crystal](https://crystal-lang.org/)   | Ruby 风格的编译式原生语言    | 较成熟    |
+| [Mojo](https://docs.modular.com/mojo/) | AI Infra、异构计算和系统编程 | 发展中    |
+| [Chapel](https://chapel-lang.org/)     | 高性能并行与分布式计算        | HPC 小众 |
+
+需要注意：
+
+- Carbon 官方明确表示仍是实验性项目，尚不适合正式生产使用。
+
+  [image](https://www.google.com/s2/favicons?domain=https://carbonlang.dev\&sz=32)
+
+  Carbon Language
+
+- Vale 已归档，不能再把它当作活跃发展的主流候选语言。
+
+  [image](https://www.google.com/s2/favicons?domain=https://github.com\&sz=32)
+
+  GitHub
+
+- Mojo 官方将其定位为面向高性能 AI 基础设施与异构计算的系统编程语言。
+
+  [image](https://www.google.com/s2/favicons?domain=https://docs.modular.com\&sz=32)
+
+  Modular
+
+
+
+### 3. 历史系统编程语言
+
+以下语言现在不是主流新项目的首选，但对理解操作系统和编译器发展历史很有价值。
+
+| 语言                     | 历史意义或应用方向         |
+| ---------------------- | ----------------- |
+| BCPL                   | C 语言的重要前身         |
+| B                      | 从 BCPL 演进、C 的直接前身 |
+| BLISS                  | 经典系统编程语言          |
+| PL/I                   | 早期大型机及系统软件        |
+| JOVIAL                 | 航空航天、嵌入式系统        |
+| ALGOL 68               | 影响后续系统语言设计        |
+| Pascal                 | 编译器、教学、系统软件       |
+| Object Pascal / Delphi | 原生桌面与系统开发         |
+| Modula-2               | 模块化系统编程           |
+| Modula-3               | 安全、模块化系统编程        |
+| Oberon                 | 操作系统和语言设计         |
+| Forth                  | 嵌入式、固件、交互式系统      |
+| Cyclone                | 内存安全 C 风格语言研究     |
+| NEWP                   | Burroughs 系统软件    |
+| ESPOL                  | 早期操作系统开发          |
+| PL/8、PL-6              | 特定计算机系统的软件开发      |
+| SYMPL                  | Control Data 系统开发 |
+
+这些语言中不少已经很少用于新项目，但它们对现代语言的类型系统、模块化、内存管理和编译器设计具有历史影响。
+
+### 4. 广义上的系统与基础设施开发语言
+
+如果把“系统编程”扩展到数据库、编译器、分布式系统、开发工具、服务器框架等，而不局限于内核和驱动，那么还可以包括：
+
+Java、C#、Kotlin、Scala、OCaml、Haskell、Common Lisp、Scheme、F#、Erlang、Elixir、Julia 等。
+
+例如，Java 和 C# 可以开发数据库及基础设施系统，OCaml 和 Haskell 可以实现编译器，Erlang 和 Elixir 非常适合高并发分布式服务。
+
+但这不代表它们与 C、C++、Rust 在裸机环境、硬件控制和运行时依赖方面完全等价。
+
+## 三、GPU 算子语言和系统级语言的交集
+
+这是最值得你关注的一张表。
+
+| 语言      | 系统编程   | 自定义 GPU Kernel | 适合 AI Infra |
+| ------- | ------ | -------------- | ----------- |
+| C++     |        |                | 非常适合        |
+| C       |        |                | 适合底层        |
+| Rust    |        |                | 很有潜力        |
+| Zig     |        | 实验性            | 值得关注        |
+| Mojo    |        |                | 专门面向该领域     |
+| D       |        | 小众工具链          | 生态有限        |
+| Fortran |        |                | 偏 HPC       |
+| Swift   |        | 依赖 DSL/Metal   | 偏 Apple     |
+| Go      |        | 主要依赖外部 GPU 代码  | 适合基础设施      |
+| Python  | 非典型    |                | 非常适合        |
+| Julia   | 非典型    |                | 适合科学计算      |
+| C#      | 广义系统开发 |                | 特定场景        |
+| Java    | 广义系统开发 |                | 特定场景        |
+
+这里的“自定义 GPU Kernel”指通过相应编译器或 DSL 在 GPU 上运行自定义计算，并不意味着这些语言都拥有和 CUDA C++ 相同的硬件控制能力或生态成熟度。
+
+## 四、从开发方向看，该选择哪些语言？
+
+不同的高性能岗位，适合的语言组合差别很大。
+
+| 方向           | 最推荐的语言及工具                 |
+| ------------ | ------------------------- |
+| CUDA 算子工程师   | C++、CUDA、Triton、CuTe      |
+| 大模型推理引擎      | C++、Python、CUDA、Triton    |
+| 大模型训练系统      | C++、Python、CUDA、NCCL      |
+| GPU 编译器      | C++、Rust、Python、LLVM、MLIR |
+| 数据库内核        | C++、Rust、C                |
+| 操作系统内核       | C、Rust、C++                |
+| 存储引擎         | C++、Rust、C                |
+| HPC 科学计算     | C++、Fortran、Julia、CUDA    |
+| 分布式系统        | Go、Rust、C++、Java          |
+| 高性能交易 HFT    | C++、C、Rust                |
+| Apple GPU 开发 | Metal C++、MSL、Swift       |
+| 嵌入式与驱动       | C、C++、Rust、Zig、Ada        |
+
+## 五、如果只选几个语言深入学习
+
+语言方向对比
+
+GPU 算子系统底层生态成熟度
+
+C++
+
+GPU 原生开发、数据库、编译器、推理引擎
+
+Python
+
+Triton、CuTe DSL、训练框架
+
+Fortran
+
+CUDA Fortran、HPC
+
+Julia
+
+CUDA.jl、科学计算、数值算法
+
+Mojo
+
+GPU Kernel、AI 系统、异构计算
+
+Rust
+
+系统安全、GPU Kernel、异步运行时
+
+Zig
+
+原生系统编程、实验性 GPU 编译
+
+D
+
+原生程序、实验性 GPU 后端
+
+Go
+
+分布式推理服务、基础设施
+
+Odin
+
+原生高性能软件、数据导向设计
+
+点击不同维度排序。分值是针对 AI Infra 学习选型的主观评估，并非实际性能测试或统一行业评级。
+
+结合你正在学习的 CUDA、Triton，以及未来可能从事的 AI Infra、数据库内核和编译器开发，我会把语言分成三个层次：
+
+核心必须深入：C++、Python、Rust。 C++ 打牢系统和 GPU 底层，Python 负责 AI 框架和 Kernel DSL，Rust 拓展系统软件和安全并发能力。
+
+值得专项学习：CUDA C++、Triton、CuTe DSL、LLVM/MLIR。 严格来说，后面几个并不是独立的通用语言，但对 GPU 算子优化岗位的重要性可能超过再多掌握几门通用语言。
+
+适合探索前沿：Mojo、Zig、Julia、TileLang、CUDA Rust。 它们能帮助你从不同角度理解 GPU 编译、异构计算和系统设计。
+
+最终，如果你要同时覆盖 AI Infra 算子开发和系统级高性能开发，C++ + Python + Rust 是最实用的组合；GPU Kernel 再以 CUDA + Triton + CuTe 作为专业技能深入即可。

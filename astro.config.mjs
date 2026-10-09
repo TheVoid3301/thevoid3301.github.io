@@ -22,26 +22,42 @@ export default defineConfig({
 		}),
   	},
 	integrations: [
-
 		mermaid({
 			autoTheme: true,
 			enableLog: false,
 		}),
+
 		starlight({
 			customCss: [
 				'./src/styles/geek.css',
 				'katex/dist/katex.min.css',
 			],
+
 			title: "TheVoid3301's Blog",
+
+			expressiveCode: {
+				themes: ['github-dark', 'github-light'],
+				useStarlightDarkModeSwitch: true,
+				styleOverrides: {
+					borderRadius: '0.75rem',
+					codeFontSize: '0.9rem',
+					codeLineHeight: '1.7',
+					codeFontFamily:
+					"'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
+				},
+			},
+
 			components: {
 				PageTitle: './src/components/AriticleTitle.astro',
 			},
+
 			locales: {
 				root: {
 					label: '简体中文',
 					lang: 'zh-CN',
 				}
 			},
+
 			social: [
 				{
 					icon: 'github', 
@@ -49,6 +65,7 @@ export default defineConfig({
 					href: 'https://github.com/thevoid3301' 
 				},
 			],
+
 			plugins: [
 				starlightBlog({
 					title: '碎碎念',
@@ -61,6 +78,7 @@ export default defineConfig({
 					},
 				}),
 			],
+
 			sidebar: [
 				{
 					label: 'Algorithm',
