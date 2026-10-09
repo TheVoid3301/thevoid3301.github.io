@@ -1,6 +1,29 @@
+
+name: Deploy Astro Starlight
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build Astro Site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
       - name: Check CUDA image paths
         run: |
-          echo "Commit:"
+          echo "Current commit:"
           git rev-parse HEAD
 
           echo "CUDA files:"
@@ -13,3 +36,22 @@
 
           echo "Node version:"
           node --version
+
+      - name: Build and Upload Astro
+        uses: withastro/action@v6
+        with:
+          node-version: 24
+
+  deploy:
+    name: Deploy GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy Website
+        id: deployment
+        uses: actions/deploy-pages@v5
