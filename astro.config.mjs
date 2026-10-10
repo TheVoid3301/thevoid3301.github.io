@@ -89,6 +89,10 @@ export default defineConfig({
 					items: [{ autogenerate: { directory: 'infra' } }],
 				},
 				{
+					label: 'LLM',
+					items: [{ autogenerate: { directory: 'llm' } }],
+				},
+				{
 					label: 'Project',
 					items: [{ autogenerate: { directory: 'projects' } }],
 				},
