@@ -1,0 +1,74 @@
+
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { Code } from '@astrojs/starlight/components';
+
+export function getStaticPaths() {
+  // 自动扫描 src/code/ 下的代码文件
+  const modules = import.meta.glob(
+    '/src/code/**/*.{py,cpp,cc,c,h,hpp,cu,rs,zig,js,jsx,ts,tsx,go,java,sh}',
+    {
+      eager: true,
+      query: '?raw',
+      import: 'default',
+    }
+  );
+
+  const languages: Record<string, string> = {
+    py: 'python',
+    cpp: 'cpp',
+    cc: 'cpp',
+    c: 'c',
+    h: 'c',
+    hpp: 'cpp',
+    cu: 'cpp',
+    rs: 'rust',
+    zig: 'zig',
+    js: 'javascript',
+    jsx: 'jsx',
+    ts: 'typescript',
+    tsx: 'tsx',
+    go: 'go',
+    java: 'java',
+    sh: 'bash',
+  };
+
+  return Object.entries(modules).map(([path, source]) => {
+    const relativePath = path.replace(/^\/?src\/code\//, '');
+    const filename = relativePath.split('/').pop() ?? relativePath;
+    const extension = filename.split('.').pop()?.toLowerCase() ?? '';
+
+    // URL 不保留文件扩展名
+    const slug = relativePath.replace(/\.[^/.]+$/, '');
+
+    return {
+      params: { slug },
+      props: {
+        source: source as string,
+        filename,
+        relativePath,
+        lang: languages[extension] ?? 'text',
+      },
+    };
+  });
+}
+
+const { source, filename, relativePath, lang } = Astro.props;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: filename,
+    description: `Source code: ${relativePath}`,
+  }}
+>
+  <p>
+    Source file: <code>src/code/{relativePath}</code>
+  </p>
+
+  <Code
+    code={source}
+    lang={lang}
+    title={filename}
+  />
+</StarlightPage>
